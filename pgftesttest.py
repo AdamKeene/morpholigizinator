@@ -4,19 +4,31 @@ import re
 grammar = pgf.readPGF("Parse.pgf")
 lang = grammar.languages["ParseEng"]
 
-def print_tree(node, indent=0):
+categories = [
+    ["TPres", "TPast", "TFut"],
+    ["NumSg", "NumPl"],
+    ["DefArt", "IndefArt"]
+]
+
+def process_tree(node, count=0):
+    results = []
     if isinstance(node, tuple):
-        print('  ' * indent + str(node[0]))
+        for cat in categories:
+            if node[0] in categories:
+                for alt in cat:
+                    if alt != node[0]:
+                        results.extend(process_tree(alt, count + 1))
+
         for child in node[1]:
-            print_tree(child.unpack(), indent + 1)
+            results.extend(process_tree(child.unpack(), count + 1))
     else:
-        print('sack' + '  ' * indent + str(node))
+        print('sack' + '  ' * count + str(node))
 
 def get_parse_tree(text):
     try:
         _, expr = next(lang.parse(text))
         tree = expr.unpack()
-        print_tree(tree)
+        process_tree(tree)
         return expr
     except Exception as e:
         print(f"Error: {e}")
