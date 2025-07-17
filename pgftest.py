@@ -2,10 +2,10 @@ import pgf
 from chart import cats
 from itertools import product
 
-grammar = pgf.readPGF("Parse.pgf")
-lang = grammar.languages["ParseEng"]
+grammar = pgf.readPGF("EnEsParse.pgf")
+lang = grammar.languages["ParseSpa"]
 
-example = "the cat sat on the mat, the cat sat on the mat"
+example = "El gato se sentó en la alfombra"
 i = lang.parse(example)
 tree, expr = i.__next__()
 
@@ -91,10 +91,10 @@ def separate_clause(expr, cats=cats):
         results.extend(separate_clause(arg))
     return results
 
-# #example separation
-# example = "the cat sat on the mat and ate my hat, you sat on the mat and ate a hat"
-# i = lang.parse(example)
-# tree, expr = i.__next__()
-# clause_trees = separate_clause(expr)
-# for clause in clause_trees:
-#     print("cl", lang.linearize(clause))
+    # #example separation
+    # example = "the cat sat on the mat and ate my hat, you sat on the mat and ate a hat"
+    # i = lang.parse(example)
+    # tree, expr = i.__next__()
+    # clause_trees = separate_clause(expr)
+    # for clause in clause_trees:
+    #     print("cl", lang.linearize(clause))

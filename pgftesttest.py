@@ -1,27 +1,32 @@
 # https://www.grammaticalframework.org/lib/doc/absfuns.html
 
 import pgf
-import re
+# from chart import cats
 
-grammar = pgf.readPGF("Parse.pgf")
-lang = grammar.languages["ParseEng"]
+parse_file = pgf.readPGF("EnEsParse.pgf")
+parse_en = parse_file.languages["ParseEng"]
+parse_es = parse_file.languages["ParseSpa"]
+parsers = {
+    "en": parse_en, 
+    "es": parse_es}
 
-def print_tree(node, indent=0):
-    if isinstance(node, tuple):
-        print('  ' * indent + str(node[0]))
-        for child in node[1]:
-            print_tree(child.unpack(), indent + 1)
-    else:
-        print('sack' + '  ' * indent + str(node))
+wordnet_file = pgf.readPGF("WordNet.pgf")
 
-def get_parse_tree(text):
-    try:
-        _, expr = next(lang.parse(text))
-        tree = expr.unpack()
-        print_tree(tree)
-        return expr
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+wordnet_en = wordnet_file.languages["WordNetEng"]
+wordnet_es = wordnet_file.languages["WordNetSpa"]
+wordnets = {
+    "en": wordnet_en,
+    "es": wordnet_es
+}
 
-tree_str = get_parse_tree("the cat sat on the mat and I ate my hat")
+def translate(text, source_lang, target_lang):
+    parser = parsers[source_lang]
+    wordnet = wordnets[target_lang]
+
+    parsed = parser.parse(text)
+    for tree, expr in parsed:
+        linearized = wordnet.linearize(expr)
+        print(f"Original: {text}\nTranslated: {linearized}\n")
+        return linearized
+    
+translate("cat", 'en', 'es')
