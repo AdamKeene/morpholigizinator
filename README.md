@@ -64,3 +64,16 @@ Use separate_clause to extract clauses from larger bodies of text. This extracts
 
 This function uses the grammar_categories db which contains category names flagged as clauses, custom identifiers can be passed through the cats flag
 
+```python
+example_text = "The cat sat on the mat and ate my hat, he sat on the mat and ate my hat."
+clauses = separate_clause(example_expr)
+for clause in clauses:
+    print(lang.linearize(clause))
+# the cat sat on the mat and ate my hat, he sat on the mat and ate my hat
+# the cat sat on the mat and ate my hat, he sat on the mat and ate my hat
+# the cat sat on the mat and ate my hat, he sat on the mat
+# the cat sat on the mat and ate my hat
+# he sat on the mat
+# he sat on the mat
+# ate my hat
+```
