@@ -3,6 +3,7 @@ from pathlib import Path
 ''' 
 export GF_LIB_PATH="/usr/share/gf-3.11/gf-rgl/src/abstract:/usr/share/gf-3.11/gf-wordnet:$GF_LIB_PATH"
 '''
+# depticated but im keeping it
 
 def get_funcs(path):
     grammar = pgf.readPGF(path)

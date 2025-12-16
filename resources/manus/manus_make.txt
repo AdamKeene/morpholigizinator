@@ -1,0 +1,34 @@
+export GF_LIB_PATH="/usr/share/gf-3.11/gf-rgl:$HOME:/Documents/pgf-code/resources/manus" && gf -make EngLex.gf FreLex.gf
+
+License: see help -license.   
+Languages:
+> i gf_hybrid_starter/grammar/Lexicon.pgf
+Languages: EngLex FreLex
+0 msec
+Lexicon> 0 msec
+Lexicon> 
+0 msec
+Lexicon> 0 msec
+Lexicon> parse -lang=EngLex "John loves Mary"
+TransitivePred John loves Mary
+0 msec
+Lexicon> 0 msec
+Lexicon> 
+0 msec
+Lexicon> 0 msec
+Lexicon> linearize FreLex TransitivePred John loves Mary
+Function FreLex is not in scope
+Lexicon> 0 msec
+Lexicon> 
+0 msec
+Lexicon> 0 msec
+Lexicon> l -lang=FreLex TransitivePred John loves Mary
+Jean aime Marie
+0 msec
+Lexicon> 0 msec
+Lexicon> 
+0 msec
+Lexicon> 0 msec
+Lexicon> q
+See you.
+0 msec
