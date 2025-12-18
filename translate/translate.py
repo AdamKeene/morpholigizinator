@@ -25,6 +25,7 @@ class File:
         self.topic_words = None
         self.translations = {}
         self.expanded_lexicon = {}
+        self.synset_groups = {}  # NEW: Store synsets for expansion
 
     def load_subs(self):
         encodings = ['utf-8', 'utf-8-sig', 'iso-8859-1', 'cp1252']
@@ -114,7 +115,29 @@ class File:
         if self.topic_words is None:
             raise ValueError('Call `vectorize_and_fit_lda` before translating')
         self.translations[target_lang] = get_context_aware_translation(self, source_lang=source_lang, target_lang=target_lang) # type: ignore
-        print(self.translations[target_lang]) # type: ignore
+        # Expand the lexicon using the stored synsets
+        self.expand_lexicon(target_lang)
+    
+    def expand_lexicon(self, target_lang: str, max_synsets: int = 3, max_lemmas_per_synset: int = 10):
+        """Expand the lexicon using the original synsets from translation for sense-aware expansion."""
+        if not self.synset_groups:
+            raise ValueError('Call `translate_topics` before expanding')
+        
+        expanded = set()
+        for word in self.topic_words: # type: ignore
+            synsets = self.synset_groups.get(word)
+            if not synsets:
+                continue  # Skip if no synsets
+            
+            # Limit synsets for speed
+            for synset in synsets[:max_synsets]:
+                # Collect lemmas from the synset in the target language (sense-specific related words)
+                lemmas = [lemma.name().lower() for lemma in synset.lemmas(lang=target_lang)][:max_lemmas_per_synset]
+                expanded.update(lemmas)
+        
+        self.expanded_lexicon[target_lang] = expanded
+        print(f"Expanded lexicon ({target_lang}): {sorted(expanded)}")  # Optional: print for inspection
+
 
 def get_context_aware_translation(self, source_lang='spa', target_lang='eng'):
     """
@@ -174,6 +197,7 @@ def get_context_aware_translation(self, source_lang='spa', target_lang='eng'):
         # Pick translation with highest coherence
         best_picks[word] = max(scores, key=lambda x: scores[x])
     
+    self.synset_groups = synset_groups  # NEW: Store for expansion
     return best_picks
 
 if __name__ == "__main__":
@@ -181,5 +205,6 @@ if __name__ == "__main__":
     f = File(sample_path)
     f.preprocess()
     f.vectorize_and_fit_lda()
-    f.translate_topics()
+    f.translate_topics()  # Now includes expansion
+    print(f"Final expanded lexicon: {f.expanded_lexicon}")
 
