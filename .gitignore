@@ -1,1 +1,23 @@
 pgfenv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Large resource files — download with download_resources.py
+resources/cc.*.vec
+resources/cc.*.vec.gz
+
+# Generated GF files — rebuilt by multilingual_pipeline.py
+resources/DomainLexicon/
+*.pgf
+*.gfo
+
+# Databases (large or generated)
+gf_wordnet.db
+grammar_categories.db
+
+# Misc
+*.zip
+.DS_Store

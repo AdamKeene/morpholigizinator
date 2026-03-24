@@ -1,0 +1,1 @@
+abstract DomainTranslator = Parse, DomainLexicon ** {}
