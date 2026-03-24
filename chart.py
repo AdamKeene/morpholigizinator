@@ -159,28 +159,33 @@ def get_category_info(category_name: str) -> Dict[str, Any]:
         'dependencies': dependencies
     }
 
-# Legacy compatibility - create a dictionary-like interface
+# Dictionary-like interface — lazily initialized on first access.
 class CategoryDB:
-    """Dictionary-like interface for backward compatibility."""
-    
     def __init__(self):
+        self._ready = False
+
+    def _ensure_initialized(self):
+        if self._ready:
+            return
         if not os.path.exists(DB_FILE):
             create_database()
             populate_database()
-    
+        self._ready = True
+
     def __getitem__(self, key):
+        self._ensure_initialized()
         if key == 'all_clauses':
             return get_all_clauses()
-        else:
-            return get_categories_by_type(key)
-    
+        return get_categories_by_type(key)
+
     def get(self, key, default=None):
         try:
             return self[key]
-        except:
+        except Exception:
             return default
-    
+
     def keys(self):
+        self._ensure_initialized()
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute('SELECT DISTINCT node_type FROM categories')
@@ -188,7 +193,5 @@ class CategoryDB:
         conn.close()
         return ['all_clauses'] + node_types
 
-# Initialize database and create compatibility object
-create_database()
-populate_database()
+
 cats = CategoryDB()

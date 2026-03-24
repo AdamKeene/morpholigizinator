@@ -1,6 +1,18 @@
 import re
 from pathlib import Path
 
+import nltk
+from nltk.tokenize import TextTilingTokenizer
+
+# Download required NLTK data quietly if not already present.
+for _pkg in ("punkt", "stopwords"):
+    try:
+        nltk.data.find(f"tokenizers/{_pkg}" if _pkg == "punkt" else f"corpora/{_pkg}")
+    except LookupError:
+        nltk.download(_pkg, quiet=True)
+
+_ttt = TextTilingTokenizer()
+
 
 def load_document(path):
     """
@@ -148,6 +160,20 @@ def _load_srt(path):
 # ---------------------------------------------------------------------------
 
 def _load_txt(path):
-    """Return one chunk per paragraph (blank-line separated)."""
+    """Return subject-coherent chunks using TextTiling vocabulary-shift detection."""
     text = path.read_text(encoding="utf-8", errors="replace")
-    return [p.replace("\n", " ") for p in re.split(r"\n\s*\n", text)]
+    return chunk_by_topic(text)
+
+
+def chunk_by_topic(text):
+    """
+    Split *text* into subject-coherent chunks via TextTiling.
+    Falls back to blank-line paragraphs if the text is too short for TextTiling.
+    """
+    try:
+        tiles = _ttt.tokenize(text)
+        return [t.replace("\n", " ").strip() for t in tiles if t.strip()]
+    except ValueError:
+        # TextTiling requires a minimum amount of text; fall back gracefully.
+        paragraphs = re.split(r"\n\s*\n", text)
+        return [p.replace("\n", " ").strip() for p in paragraphs if p.strip()]
