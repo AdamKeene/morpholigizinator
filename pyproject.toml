@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "morpholigizinator"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+# document_loader.py is a root-level module imported by translator/pipeline.py
+py-modules = ["document_loader"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["translator*"]

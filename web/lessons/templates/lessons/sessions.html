@@ -1,0 +1,70 @@
+{% extends 'lessons/base.html' %}
+{% block title %}My Sessions — morpholigizinator{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">My sessions</h2>
+  <a href="{% url 'page-home' %}" class="btn btn-primary">+ New lesson</a>
+</div>
+
+<div id="sessions-container">
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function statusBadge(s) {
+  const map = { pending: 'secondary', words_ready: 'info', complete: 'success', failed: 'danger' };
+  const label = { pending: 'Building…', words_ready: 'Words ready', complete: 'Complete', failed: 'Failed' };
+  return `<span class="badge bg-${map[s] || 'secondary'}">${label[s] || s}</span>`;
+}
+function langName(code) {
+  return { en:'English', de:'German', es:'Spanish', ja:'Japanese' }[code] || code;
+}
+function timeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+async function load() {
+  try {
+    const sessions = await fetch('/api/sessions/').then(r => r.json());
+    const box = document.getElementById('sessions-container');
+    if (!sessions.length) {
+      box.innerHTML = `<div class="text-center text-muted py-5">
+        <p>No sessions yet.</p>
+        <a href="{% url 'page-home' %}" class="btn btn-primary">Create your first lesson</a>
+      </div>`;
+      return;
+    }
+    box.innerHTML = `<div class="list-group shadow-sm">${sessions.map(s => `
+      <a href="/sessions/${s.id}/" class="list-group-item list-group-item-action py-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="fw-semibold">${escHtml(langName(s.source_lang))} → ${escHtml(langName(s.target_lang))}</span>
+            <span class="text-muted ms-2 small">#${s.id}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            ${statusBadge(s.status)}
+            <small class="text-muted">${timeAgo(s.created_at)}</small>
+          </div>
+        </div>
+        <small class="text-muted">${s.word_count} words</small>
+      </a>`).join('')}</div>`;
+  } catch(e) {
+    document.getElementById('sessions-container').innerHTML =
+      '<div class="alert alert-danger">Failed to load sessions.</div>';
+  }
+}
+load();
+</script>
+{% endblock %}

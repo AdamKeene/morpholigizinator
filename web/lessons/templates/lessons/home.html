@@ -1,0 +1,185 @@
+{% extends 'lessons/base.html' %}
+{% block title %}morpholigizinator{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Upload form -->
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="card-title mb-1">New lesson</h2>
+        <p class="text-muted mb-4">Paste text or upload a file to generate a personalised vocabulary lesson.</p>
+
+        <div id="form-error" class="alert alert-danger d-none"></div>
+
+        <div class="mb-3">
+          <label class="form-label" for="title-input">Title <span class="text-muted">(optional)</span></label>
+          <input class="form-control" type="text" id="title-input" placeholder="e.g. Breaking Bad S1E1">
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0" for="text-input">Text</label>
+            <label class="btn btn-sm btn-outline-secondary mb-0" for="file-input">
+              Upload file
+              <input type="file" id="file-input" accept=".txt,.srt,.vtt" class="d-none">
+            </label>
+          </div>
+          <textarea class="form-control font-monospace" id="text-input" rows="10"
+                    placeholder="Paste text here, or upload a .txt or .srt subtitle file…"></textarea>
+          <div class="form-text" id="file-status"></div>
+        </div>
+
+        <div class="row g-2 mb-4">
+          <div class="col">
+            <label class="form-label" for="source-lang">Translate from</label>
+            <select class="form-select" id="source-lang">
+              <option value="en" selected>English</option>
+              <option value="de">German</option>
+              <option value="es">Spanish</option>
+              <option value="ja">Japanese</option>
+            </select>
+          </div>
+          <div class="col">
+            <label class="form-label" for="target-lang">into</label>
+            <select class="form-select" id="target-lang">
+              <option value="de" selected>German</option>
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="ja">Japanese</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary px-4" id="submit-btn">Create lesson</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent sessions -->
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">Recent sessions</h5>
+        <div id="recent-sessions">
+          <div class="text-center text-muted py-4">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+          </div>
+        </div>
+        <a href="{% url 'page-sessions' %}" class="btn btn-sm btn-outline-secondary mt-2">View all</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+// ---- File upload parsing ----
+document.getElementById('file-input').addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
+  const status = document.getElementById('file-status');
+  status.textContent = `Reading ${file.name}…`;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let text = e.target.result;
+    const isSrt = file.name.toLowerCase().endsWith('.srt') || file.name.toLowerCase().endsWith('.vtt');
+    if (isSrt) text = parseSrt(text);
+    document.getElementById('text-input').value = text;
+    if (!document.getElementById('title-input').value)
+      document.getElementById('title-input').value = file.name.replace(/\.[^.]+$/, '');
+    status.textContent = `Loaded ${file.name} (${text.split(/\s+/).length} words)`;
+  };
+  reader.readAsText(file, 'utf-8');
+});
+
+function parseSrt(raw) {
+  return raw
+    .split('\n')
+    .filter(line => {
+      const t = line.trim();
+      return t && !/^\d+$/.test(t) && !/\d{2}:\d{2}:\d{2}/.test(t);
+    })
+    .map(l => l.replace(/<[^>]+>/g, '').replace(/\{[^}]+\}/g, '').trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+// ---- Form submit ----
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const text       = document.getElementById('text-input').value.trim();
+  const title      = document.getElementById('title-input').value.trim() || 'Untitled';
+  const sourceLang = document.getElementById('source-lang').value;
+  const targetLang = document.getElementById('target-lang').value;
+  const errBox     = document.getElementById('form-error');
+
+  errBox.classList.add('d-none');
+  if (!text) { showErr('Please enter or upload some text.'); return; }
+  if (sourceLang === targetLang) { showErr('Source and target languages must be different.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
+
+  try {
+    const res = await fetch('/api/documents/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ title, text, source_lang: sourceLang, target_lang: targetLang }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showErr(data.detail || 'Failed to create lesson.'); reset(); return; }
+    window.location.href = `/sessions/${data.id}/`;
+  } catch (e) {
+    showErr('Network error: ' + e.message);
+    reset();
+  }
+});
+
+function showErr(msg) {
+  const b = document.getElementById('form-error');
+  b.textContent = msg;
+  b.classList.remove('d-none');
+}
+function reset() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = false;
+  btn.textContent = 'Create lesson';
+}
+
+// ---- Recent sessions ----
+async function loadRecent() {
+  try {
+    const sessions = await fetch('/api/sessions/').then(r => r.json());
+    const box = document.getElementById('recent-sessions');
+    if (!sessions.length) {
+      box.innerHTML = '<p class="text-muted small">No sessions yet. Create one above!</p>';
+      return;
+    }
+    box.innerHTML = sessions.slice(0, 6).map(s => `
+      <a href="/sessions/${s.id}/" class="list-group-item list-group-item-action px-0 py-2 border-0 border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-medium">${escHtml(s.source_doc_title || '#' + s.id)}</span>
+          ${statusBadge(s.status)}
+        </div>
+        <small class="text-muted">${escHtml(s.source_lang)} → ${escHtml(s.target_lang)} &bull; ${s.word_count} words</small>
+      </a>`).join('');
+  } catch(e) {
+    document.getElementById('recent-sessions').innerHTML = '<p class="text-muted small">Could not load sessions.</p>';
+  }
+}
+
+function statusBadge(s) {
+  const map = { pending: 'secondary', words_ready: 'info', complete: 'success', failed: 'danger' };
+  return `<span class="badge bg-${map[s] || 'secondary'}">${s}</span>`;
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadRecent();
+</script>
+{% endblock %}

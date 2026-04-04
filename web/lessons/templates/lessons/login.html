@@ -1,0 +1,38 @@
+{% extends 'lessons/base.html' %}
+{% block title %}Login — morpholigizinator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-sm-10 col-md-6 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="card-title mb-4">Log in</h2>
+
+        {% if error %}
+          <div class="alert alert-danger py-2">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+          <div class="mb-3">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-control" type="text" id="username" name="username"
+                   autofocus autocomplete="username" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-control" type="password" id="password" name="password"
+                   autocomplete="current-password" required>
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Log in</button>
+        </form>
+
+        <p class="text-center text-muted mt-3 mb-0 small">
+          No account? <a href="{% url 'page-register' %}">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+/* ============================================================
+   Global
+   ============================================================ */
+body {
+  background-color: #f4f5f7;
+  color: #1a1a2e;
+}
+
+/* ---- Navbar ---- */
+.navbar {
+  background-color: #1a1a2e;
+}
+.navbar-brand {
+  letter-spacing: .04em;
+  font-size: 1.1rem;
+}
+
+/* ---- Cards ---- */
+.card {
+  border: none;
+  border-radius: .75rem;
+}
+
+/* ============================================================
+   Home — word cards
+   ============================================================ */
+.word-card {
+  border-radius: .6rem;
+  transition: box-shadow .15s, opacity .15s;
+  cursor: default;
+}
+.word-card.known {
+  opacity: .5;
+}
+.word-card .know-btn {
+  font-size: .8rem;
+}
+
+/* ============================================================
+   Session page — exercise cards
+   ============================================================ */
+.exercise-card {
+  background: #fff;
+  border-radius: .75rem;
+  padding: 2rem;
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.prompt-word {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.prompt-sentence {
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #1a1a2e;
+  background: #f0f4ff;
+  border-left: 4px solid #4263eb;
+  border-radius: .4rem;
+  padding: .75rem 1rem;
+}
+
+/* ---- MC choices ---- */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+.choice-btn {
+  padding: .75rem 1rem;
+  font-size: 1rem;
+  border-radius: .5rem;
+  text-align: left;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: normal;
+  word-break: break-word;
+}
+.choice-btn.correct {
+  background: #d3f9d8;
+  border-color: #2f9e44;
+  color: #2f9e44;
+}
+.choice-btn.incorrect {
+  background: #ffe3e3;
+  border-color: #e03131;
+  color: #e03131;
+}
+.choice-btn:disabled {
+  opacity: 1;
+}
+
+/* ---- Feedback strip ---- */
+.feedback-strip {
+  border-radius: .5rem;
+  padding: .75rem 1rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+.feedback-strip.correct {
+  background: #d3f9d8;
+  color: #2f9e44;
+}
+.feedback-strip.incorrect {
+  background: #ffe3e3;
+  color: #e03131;
+}
+
+/* ---- Word tiles ---- */
+.tile-answer-area {
+  min-height: 3.5rem;
+  border: 2px dashed #adb5bd;
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  align-items: center;
+  transition: border-color .15s;
+}
+.tile-answer-area.has-tiles {
+  border-color: #4263eb;
+}
+.tile-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  min-height: 2.5rem;
+}
+.tile-btn {
+  border-radius: 2rem;
+  padding: .35rem .9rem;
+  font-size: .95rem;
+  transition: transform .1s, box-shadow .1s;
+}
+.tile-btn:active {
+  transform: scale(.95);
+}
+.tile-btn.in-answer {
+  background: #4263eb;
+  border-color: #4263eb;
+  color: #fff;
+}
+.tile-btn.in-answer:hover {
+  background: #3451b2;
+  border-color: #3451b2;
+  color: #fff;
+}
+.tile-btn.distractor-used {
+  opacity: .35;
+  pointer-events: none;
+}
+
+/* ---- Tile check states ---- */
+.tile-answer-area.check-correct {
+  border-color: #2f9e44;
+  background: #d3f9d8;
+}
+.tile-answer-area.check-incorrect {
+  border-color: #e03131;
+  background: #ffe3e3;
+}
+
+/* ---- Done screen ---- */
+#done-section h2 { font-size: 2rem; }
