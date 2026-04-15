@@ -1,6 +1,6 @@
 # Morpholigizinator
 
-An in-progress sentence morphology toolkit using Grammatical Framework. Hybrid translation coming soon.
+An in-progress sentence morphology toolkit using Grammatical Framework built as part of a larger language learning project. Hybrid translation coming soon.
 
 ## Usage: 
 
